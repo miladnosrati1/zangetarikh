@@ -158,7 +158,7 @@
       <h2 class="featured-ep-title">فصل پنجم: سلوکیان و اشکانیان — فراز و فرود شاهنشاهی پارت‌ها</h2>
       <div class="featured-ep-details">
         <span>مدت زمان: حدود ۳۰ دقیقه</span>
-        <a href="https://castbox.fm/channel/%D8%B2%D9%86%DA%AF-%D8%AA%D8%A7%D8%B1%DB%8C%D8%AE-id4850469?country=ir" target="_blank" rel="noopener noreferrer" class="ep-btn-listen">
+        <a href="https://castbox.fm/channel/%D8%B2%D9%86%DA%AF-%D8%AA%D8%A7%D8%B1%DB%8C%D8%AE-id4850469?country=ir" target="_blank" rel="noopener noreferrer" class="ep-btn-listen" data-track-name="شنیدن قسمت ۵ در کست‌باکس">
           <span>شنیدن قسمت</span>
           <svg viewBox="0 0 24 24">
             <path d="M8 5v14l11-7z"/>
@@ -166,6 +166,43 @@
         </a>
       </div>
     </div>
+
+    <!-- بخش پلیر اختصاصی کست‌باکس (Castbox In-App Player) -->
+    <section class="castbox-player-section animate-enter delay-3" id="player-section">
+      <div class="player-card">
+        <div class="player-header">
+          <div class="player-title-box">
+            <div class="player-icon-badge">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="player-title">پخش‌کننده آنلاین زنگ تاریخ</h3>
+              <span class="player-subtitle">شنیدن مستقیم اپیزودها در کست‌باکس بدون خروج از صفحه</span>
+            </div>
+          </div>
+          <button id="toggle-player-btn" class="player-toggle-btn" aria-expanded="true" aria-controls="castbox-iframe-wrapper">
+            <span id="player-toggle-text">بستن پلیر</span>
+            <svg id="player-toggle-icon" viewBox="0 0 24 24">
+              <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="iframe-container" id="castbox-iframe-wrapper">
+          <iframe 
+            src="https://castbox.fm/app/castbox/player/id4850469?v=8.22.11&autoplay=0" 
+            frameborder="0" 
+            width="100%" 
+            height="500"
+            loading="lazy"
+            title="پخش‌کننده پادکست زنگ تاریخ در کست‌باکس"
+            allow="autoplay">
+          </iframe>
+        </div>
+      </div>
+    </section>
 
     <!-- بخش متمایز و ویژه یوتیوب (YouTube Spotlight) -->
     <section class="youtube-section animate-enter delay-4">
@@ -176,7 +213,7 @@
         <span>کانال ویدیویی و یوتیوب زنگ تاریخ</span>
       </h2>
 
-      <a href="https://www.youtube.com/@zangetarikhpodcast?sub_confirmation=1" target="_blank" rel="noopener noreferrer" class="youtube-spotlight-card">
+      <a href="https://www.youtube.com/@zangetarikhpodcast?sub_confirmation=1" target="_blank" rel="noopener noreferrer" class="youtube-spotlight-card" data-track-name="کانال رسمی یوتیوب (اسپات‌لایت)">
         <div class="yt-header-row">
           <div class="yt-brand">
             <div class="yt-icon-box">
@@ -219,7 +256,7 @@
 
       <div class="links-list">
         <!-- کست‌باکس (Castbox) -->
-        <a href="https://castbox.fm/channel/%D8%B2%D9%86%DA%AF-%D8%AA%D8%A7%D8%B1%DB%8C%D8%AE-id4850469?country=ir" target="_blank" rel="noopener noreferrer" class="link-card">
+        <a href="https://castbox.fm/channel/%D8%B2%D9%86%DA%AF-%D8%AA%D8%A7%D8%B1%DB%8C%D8%AE-id4850469?country=ir" target="_blank" rel="noopener noreferrer" class="link-card" data-track-name="کست‌باکس (Castbox)">
           <div class="link-main-info">
             <div class="link-icon-box icon-castbox">
               <svg viewBox="0 0 24 24">
@@ -242,7 +279,7 @@
         </a>
 
         <!-- اسپاتیفای (Spotify) -->
-        <a href="https://open.spotify.com/show/32qYsV72BHMioOezToxsNP" target="_blank" rel="noopener noreferrer" class="link-card">
+        <a href="https://open.spotify.com/show/32qYsV72BHMioOezToxsNP" target="_blank" rel="noopener noreferrer" class="link-card" data-track-name="اسپاتیفای (Spotify)">
           <div class="link-main-info">
             <div class="link-icon-box icon-spotify">
               <svg viewBox="0 0 24 24">
@@ -264,7 +301,7 @@
         </a>
 
         <!-- اپل پادکست (Apple Podcasts) -->
-        <a href="https://podcasts.apple.com/us/podcast/%D8%B2%D9%86%DA%AF-%D8%AA%D8%A7%D8%B1%DB%8C%D8%AE-zangetarikh/id1547986367" target="_blank" rel="noopener noreferrer" class="link-card">
+        <a href="https://podcasts.apple.com/us/podcast/%D8%B2%D9%86%DA%AF-%D8%AA%D8%A7%D8%B1%DB%8C%D8%AE-zangetarikh/id1547986367" target="_blank" rel="noopener noreferrer" class="link-card" data-track-name="اپل پادکست (Apple Podcasts)">
           <div class="link-main-info">
             <div class="link-icon-box icon-apple">
               <svg viewBox="0 0 24 24">
@@ -286,7 +323,7 @@
         </a>
 
         <!-- کانال تلگرام (Telegram) -->
-        <a href="https://t.me/zangetarikhpodcast" target="_blank" rel="noopener noreferrer" class="link-card">
+        <a href="https://t.me/zangetarikhpodcast" target="_blank" rel="noopener noreferrer" class="link-card" data-track-name="کانال تلگرام پادکست">
           <div class="link-main-info">
             <div class="link-icon-box icon-telegram">
               <svg viewBox="0 0 24 24">
@@ -309,7 +346,7 @@
         </a>
 
         <!-- تهران‌پادکست / وب‌سایت ایرانی -->
-        <a href="https://tehranpodcast.ir/%D8%B2%D9%86%DA%AF-%D8%AA%D8%A7%D8%B1%DB%8C%D8%AE/" target="_blank" rel="noopener noreferrer" class="link-card">
+        <a href="https://tehranpodcast.ir/%D8%B2%D9%86%DA%AF-%D8%AA%D8%A7%D8%B1%DB%8C%D8%AE/" target="_blank" rel="noopener noreferrer" class="link-card" data-track-name="شنیدن تحت وب (تهران پادکست)">
           <div class="link-main-info">
             <div class="link-icon-box icon-web">
               <svg viewBox="0 0 24 24">
@@ -343,7 +380,7 @@
 
       <div class="links-list">
         <!-- اینستاگرام رسمی -->
-        <a href="https://www.instagram.com/zangetarikhpodcast" target="_blank" rel="noopener noreferrer" class="link-card">
+        <a href="https://www.instagram.com/zangetarikhpodcast" target="_blank" rel="noopener noreferrer" class="link-card" data-track-name="اینستاگرام زنگ تاریخ">
           <div class="link-main-info">
             <div class="link-icon-box icon-instagram">
               <svg viewBox="0 0 24 24">
@@ -365,7 +402,7 @@
         </a>
 
         <!-- حمایت مالی (حامی‌باش - Hamibash) -->
-        <a href="https://hamibash.com/zangetarikh" target="_blank" rel="noopener noreferrer" class="link-card link-card-special-donate">
+        <a href="https://hamibash.com/zangetarikh" target="_blank" rel="noopener noreferrer" class="link-card link-card-special-donate" data-track-name="حمایت مالی در حامی‌باش">
           <div class="link-main-info">
             <div class="link-icon-box icon-hamibash">
               <svg viewBox="0 0 24 24">
@@ -388,7 +425,7 @@
         </a>
 
         <!-- ارتباط ایمیلی با میلاد نصرتی -->
-        <a href="mailto:nosratimilad955@gmail.com" class="link-card">
+        <a href="mailto:nosratimilad955@gmail.com" class="link-card" data-track-name="ایمیل ارتباطی میلاد نصرتی">
           <div class="link-main-info">
             <div class="link-icon-box" style="background: rgba(212, 175, 55, 0.1); color: var(--gold-light);">
               <svg viewBox="0 0 24 24">
@@ -460,7 +497,8 @@
     <span id="toast-text">لینک پادکست کپی شد! 📋</span>
   </div>
 
-  <!-- اسکریپت‌ها -->
+  <!-- تنظیمات و اسکریپت‌ها -->
+  <script src="telemetry-config.js"></script>
   <script src="script.js" defer></script>
 </body>
 </html>

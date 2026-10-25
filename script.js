@@ -1,6 +1,6 @@
 /**
  * پادکست «زنگ تاریخ» | Zangetarikh Podcast
- * تعاملات، انیمیشن ذرات معلق طلایی و امکانات صوتی-ارتباطی
+ * تعاملات، انیمیشن ذرات معلق طلایی، پخش‌کننده کست‌باکس و مانیتورینگ تلگرام
  */
 
 (function () {
@@ -207,6 +207,7 @@
   if (shareBtn) {
     shareBtn.addEventListener('click', async () => {
       if (isSoundEnabled) playAncientChime(528);
+      trackEvent('اشتراک‌گذاری صفحه', window.location.href);
 
       const shareData = {
         title: 'پادکست زنگ تاریخ | میلاد نصرتی',
@@ -256,7 +257,34 @@
   }
 
   // ==========================================
-  // ۴. گردونه حکمت و نقل‌قول‌های تاریخی
+  // ۴. مدیریت پخش‌کننده کست‌باکس (Castbox In-App Player)
+  // ==========================================
+  const togglePlayerBtn = document.getElementById('toggle-player-btn');
+  const castboxWrapper = document.getElementById('castbox-iframe-wrapper');
+  const playerToggleText = document.getElementById('player-toggle-text');
+
+  if (togglePlayerBtn && castboxWrapper) {
+    togglePlayerBtn.addEventListener('click', () => {
+      if (isSoundEnabled) playAncientChime(460);
+      const isCurrentlyCollapsed = castboxWrapper.classList.contains('collapsed');
+
+      if (isCurrentlyCollapsed) {
+        castboxWrapper.classList.remove('collapsed');
+        togglePlayerBtn.classList.remove('collapsed');
+        togglePlayerBtn.setAttribute('aria-expanded', 'true');
+        if (playerToggleText) playerToggleText.textContent = 'بستن پلیر';
+        trackEvent('باز کردن پلیر کست‌باکس', 'In-App Castbox Player');
+      } else {
+        castboxWrapper.classList.add('collapsed');
+        togglePlayerBtn.classList.add('collapsed');
+        togglePlayerBtn.setAttribute('aria-expanded', 'false');
+        if (playerToggleText) playerToggleText.textContent = 'نمایش پلیر';
+      }
+    });
+  }
+
+  // ==========================================
+  // ۵. گردونه حکمت و نقل‌قول‌های تاریخی
   // ==========================================
   const historicalQuotes = [
     {
@@ -314,7 +342,7 @@
   }
 
   // ==========================================
-  // ۵. اسکرول به بالای صفحه (Back to Top)
+  // ۶. اسکرول به بالای صفحه (Back to Top)
   // ==========================================
   const backToTopBtn = document.getElementById('back-to-top-btn');
   if (backToTopBtn) {
@@ -329,19 +357,134 @@
   }
 
   // ==========================================
-  // ۶. فیدبک لمسی و صوتی کارت‌های پلتفرم
+  // ۷. ماژول مانیتورینگ و ارسال نوتیفیکیشن تلگرام
   // ==========================================
-  const linkCards = document.querySelectorAll('.link-card, .youtube-spotlight-card');
-  linkCards.forEach((card) => {
-    card.addEventListener('mouseenter', () => {
-      // هاور نرم
-    });
-    card.addEventListener('click', () => {
-      if (isSoundEnabled) {
-        playAncientChime(480);
+  const pageLoadTime = Date.now();
+  let lastTrackTime = 0;
+
+  function getDeviceType() {
+    const ua = navigator.userAgent;
+    if (/iPad|iPhone|iPod/.test(ua)) return 'موبایل (iOS / iPhone)';
+    if (/Android/.test(ua)) return 'موبایل (Android)';
+    if (/Windows/.test(ua)) return 'رایانه (Windows)';
+    if (/Macintosh/.test(ua)) return 'رایانه (macOS / Mac)';
+    if (/Linux/.test(ua)) return 'رایانه (Linux)';
+    return 'سایر دستگاه‌ها';
+  }
+
+  function getReferrerSource() {
+    const ref = document.referrer;
+    if (!ref) return 'مستقیم / بیو اینستاگرام';
+    if (ref.includes('instagram.com')) return 'اینستاگرام (Instagram)';
+    if (ref.includes('t.me') || ref.includes('telegram')) return 'تلگرام (Telegram)';
+    if (ref.includes('google.com')) return 'جستجوی گوگل';
+    if (ref.includes('youtube.com')) return 'یوتیوب (YouTube)';
+    return ref;
+  }
+
+  function getTehranTime() {
+    try {
+      return new Intl.DateTimeFormat('fa-IR', {
+        dateStyle: 'full',
+        timeStyle: 'medium',
+        timeZone: 'Asia/Tehran'
+      }).format(new Date());
+    } catch (e) {
+      return new Date().toLocaleTimeString('fa-IR');
+    }
+  }
+
+  function trackEvent(title, url, eventType = 'click') {
+    const config = window.ZANGE_CONFIG;
+    if (!config || !config.ENABLE_TELEGRAM_NOTIFICATIONS) return;
+
+    // کنترل عدم ارسال رگباری (Throttle)
+    const now = Date.now();
+    const throttleMs = (config.THROTTLE_SECONDS || 2) * 1000;
+    if (now - lastTrackTime < throttleMs) return;
+    lastTrackTime = now;
+
+    const durationSeconds = Math.round((now - pageLoadTime) / 1000);
+    const payload = {
+      eventType: eventType,
+      title: title,
+      url: url,
+      device: getDeviceType(),
+      referrer: getReferrerSource(),
+      duration: durationSeconds,
+      time: getTehranTime()
+    };
+
+    // روش ۱: استفاده از وب‌هوک واسط (Google Apps Script یا Cloudflare Worker)
+    if (config.WEBHOOK_URL && config.WEBHOOK_URL.trim().length > 10) {
+      try {
+        const payloadString = JSON.stringify(payload);
+        // استفاده از sendBeacon برای اطمینان از ارسال حتی در صورت خروج سریع از صفحه
+        if (navigator.sendBeacon) {
+          const blob = new Blob([payloadString], { type: 'application/json' });
+          navigator.sendBeacon(config.WEBHOOK_URL, blob);
+        } else {
+          fetch(config.WEBHOOK_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: payloadString,
+            keepalive: true
+          }).catch(() => {});
+        }
+      } catch (err) {
+        console.warn('Webhook notification error:', err);
       }
+      return;
+    }
+
+    // روش ۲: ارسال مستقیم به API تلگرام (در صورت تنظیم BOT_TOKEN و CHAT_ID)
+    const direct = config.DIRECT_TELEGRAM;
+    if (direct && direct.BOT_TOKEN && direct.CHAT_ID) {
+      try {
+        const messageText = `🔔 <b>کلیک جدید روی لینک‌های زنگ تاریخ!</b>\n\n` +
+                            `🎯 <b>بخش:</b> ${title}\n` +
+                            `🔗 <b>مقصد:</b> ${url}\n` +
+                            `📱 <b>دستگاه:</b> ${payload.device}\n` +
+                            `🌐 <b>ورودی از:</b> ${payload.referrer}\n` +
+                            `⏱️ <b>حضور در صفحه:</b> ${durationSeconds} ثانیه\n` +
+                            `📅 <b>زمان:</b> ${payload.time}`;
+
+        const telegramApiUrl = `https://api.telegram.org/bot${direct.BOT_TOKEN}/sendMessage`;
+        fetch(telegramApiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: direct.CHAT_ID,
+            text: messageText,
+            parse_mode: 'HTML',
+            disable_web_page_preview: true
+          }),
+          keepalive: true
+        }).catch(() => {});
+      } catch (err) {
+        console.warn('Direct telegram notification error:', err);
+      }
+    }
+  }
+
+  // اتصال شنونده کلیک به تمام لینک‌ها و کارت‌ها
+  const trackedLinks = document.querySelectorAll('a[data-track-name], .link-card, .youtube-spotlight-card, .ep-btn-listen');
+  trackedLinks.forEach((elem) => {
+    elem.addEventListener('click', () => {
+      if (isSoundEnabled) playAncientChime(480);
+      const title = elem.getAttribute('data-track-name') || elem.querySelector('.link-title')?.textContent?.trim() || elem.textContent?.trim() || 'لینک ناشناس';
+      const url = elem.getAttribute('href') || '-';
+      trackEvent(title, url, 'click');
     });
   });
+
+  // ثبت بازدید کلی صفحه (در صورت فعال بودن در تنظیمات)
+  if (window.ZANGE_CONFIG && window.ZANGE_CONFIG.NOTIFY_ON_PAGE_VIEW) {
+    setTimeout(() => {
+      trackEvent('بازدید از صفحه لندینگ', window.location.href, 'page_view');
+    }, 1500);
+  }
 
   // افکت اولیه برای نقل‌قول
   renderQuote(0);
