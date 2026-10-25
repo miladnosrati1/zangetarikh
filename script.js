@@ -107,79 +107,7 @@
   }
 
   // ==========================================
-  // ۲. نوای صوتی زنگ تاریخی با Web Audio API
-  // ==========================================
-  let audioCtx = null;
-  let isSoundEnabled = false;
-  const soundToggleBtn = document.getElementById('sound-toggle-btn');
-  const soundIconActive = document.getElementById('sound-icon-active');
-  const soundIconMuted = document.getElementById('sound-icon-muted');
-
-  function initAudio() {
-    if (!audioCtx) {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      if (AudioContext) {
-        audioCtx = new AudioContext();
-      }
-    }
-    if (audioCtx && audioCtx.state === 'suspended') {
-      audioCtx.resume();
-    }
-  }
-
-  function playAncientChime(freq = 432) {
-    if (!audioCtx || !isSoundEnabled) return;
-    try {
-      const now = audioCtx.currentTime;
-      const osc1 = audioCtx.createOscillator();
-      const osc2 = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(freq, now);
-
-      osc2.type = 'triangle';
-      osc2.frequency.setValueAtTime(freq * 1.5, now);
-
-      gainNode.gain.setValueAtTime(0, now);
-      gainNode.gain.linearRampToValueAtTime(0.2, now + 0.03);
-      gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 2.8);
-
-      osc1.connect(gainNode);
-      osc2.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-
-      osc1.start(now);
-      osc2.start(now);
-      osc1.stop(now + 2.8);
-      osc2.stop(now + 2.8);
-    } catch (err) {
-      console.warn('Audio play error:', err);
-    }
-  }
-
-  if (soundToggleBtn) {
-    soundToggleBtn.addEventListener('click', () => {
-      initAudio();
-      isSoundEnabled = !isSoundEnabled;
-
-      if (isSoundEnabled) {
-        soundIconActive.style.display = 'block';
-        soundIconMuted.style.display = 'none';
-        soundToggleBtn.setAttribute('title', 'قطع نوای پس‌زمینه');
-        showToast('نوای زنگ تاریخی فعال شد 🔔');
-        playAncientChime(432);
-      } else {
-        soundIconActive.style.display = 'none';
-        soundIconMuted.style.display = 'block';
-        soundToggleBtn.setAttribute('title', 'پخش نوای تاریخی');
-        showToast('صدا غیرفعال شد');
-      }
-    });
-  }
-
-  // ==========================================
-  // ۳. اشتراک‌گذاری صفحه و کپی لینک (Share API)
+  // ۲. اشتراک‌گذاری صفحه و کپی لینک (Share API)
   // ==========================================
   const shareBtn = document.getElementById('share-btn');
   const toastNotice = document.getElementById('toast-notice');
@@ -198,7 +126,6 @@
 
   if (shareBtn) {
     shareBtn.addEventListener('click', async () => {
-      if (isSoundEnabled) playAncientChime(528);
       trackEvent('اشتراک‌گذاری صفحه', window.location.href);
 
       const shareData = {
@@ -269,7 +196,6 @@
 
   tabButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      if (isSoundEnabled) playAncientChime(480);
       const targetTab = btn.getAttribute('data-tab');
       switchTab(targetTab);
       trackEvent(`تغییر سربرگ به: ${btn.querySelector('span')?.textContent || targetTab}`, `#${targetTab}`, 'tab_switch', 'tab');
@@ -334,7 +260,6 @@
     topicModalOverlay.classList.add('open');
     topicModalOverlay.setAttribute('aria-hidden', 'false');
 
-    if (isSoundEnabled) playAncientChime(512);
     trackEvent(`مشاهده حباب موضوعی: ${data.title}`, `topic:${topicKey}`, 'topic_click', 'topic');
   }
 
@@ -423,7 +348,6 @@
 
   if (refreshQuoteBtn) {
     refreshQuoteBtn.addEventListener('click', () => {
-      if (isSoundEnabled) playAncientChime(576);
       currentQuoteIndex = (currentQuoteIndex + 1) % historicalQuotes.length;
       renderQuote(currentQuoteIndex);
     });
@@ -436,7 +360,6 @@
   if (backToTopBtn) {
     backToTopBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      if (isSoundEnabled) playAncientChime(648);
       window.scrollTo({
         top: 0,
         behavior: 'smooth'
@@ -448,7 +371,7 @@
   // ۸. ماژول مانیتورینگ و ارسال نوتیفیکیشن تلگرام
   // ==========================================
   const pageLoadTime = Date.now();
-  let lastTrackTime = 0;
+  const lastCategoryTimes = {};
 
   function getDeviceType() {
     const ua = navigator.userAgent;
@@ -497,8 +420,9 @@
 
     const now = Date.now();
     const throttleMs = (config.THROTTLE_SECONDS || 2) * 1000;
-    if (now - lastTrackTime < throttleMs) return;
-    lastTrackTime = now;
+    const lastTime = lastCategoryTimes[category] || 0;
+    if (now - lastTime < throttleMs) return;
+    lastCategoryTimes[category] = now;
 
     const durationSeconds = Math.round((now - pageLoadTime) / 1000);
     const payload = {
@@ -571,7 +495,6 @@
   // ثبت شنونده‌های کلیک با تفکیک دقیق دسته‌بندی
   document.querySelectorAll('#pane-stream a').forEach((elem) => {
     elem.addEventListener('click', () => {
-      if (isSoundEnabled) playAncientChime(480);
       const title = elem.getAttribute('data-track-name') || elem.querySelector('.link-title')?.textContent?.trim() || 'پادگیر';
       trackEvent(title, elem.getAttribute('href') || '-', 'click', 'podcast');
     });
@@ -579,14 +502,12 @@
 
   document.querySelectorAll('#pane-youtube a').forEach((elem) => {
     elem.addEventListener('click', () => {
-      if (isSoundEnabled) playAncientChime(480);
       trackEvent('کانال رسمی یوتیوب', elem.getAttribute('href') || '-', 'click', 'youtube');
     });
   });
 
   document.querySelectorAll('#pane-connect a').forEach((elem) => {
     elem.addEventListener('click', () => {
-      if (isSoundEnabled) playAncientChime(480);
       const title = elem.getAttribute('data-track-name') || elem.querySelector('.link-title')?.textContent?.trim() || 'ارتباط و حمایت';
       trackEvent(title, elem.getAttribute('href') || '-', 'click', 'connect');
     });
@@ -595,12 +516,7 @@
   // ارسال خودکار نوتیفیکیشن ورود به صفحه
   setTimeout(() => {
     trackEvent('ورود به لندینگ‌پیج', window.location.href, 'page_view', 'page_view');
-  }, 350);
-
-  // مقداردهی اولیه نقل‌قول
-  renderQuote(0);
-
-})();
+  }, 400);
 
   // مقداردهی اولیه نقل‌قول
   renderQuote(0);
