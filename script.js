@@ -126,8 +126,6 @@
 
   if (shareBtn) {
     shareBtn.addEventListener('click', async () => {
-      trackEvent('اشتراک‌گذاری صفحه', window.location.href);
-
       const shareData = {
         title: 'پادکست زنگ تاریخ | میلاد نصرتی',
         text: 'شنیدن روایتی جذاب از ریشه‌ها و رازهای تاریخ در پادکست زنگ تاریخ',
@@ -198,7 +196,6 @@
     btn.addEventListener('click', () => {
       const targetTab = btn.getAttribute('data-tab');
       switchTab(targetTab);
-      trackEvent(`تغییر سربرگ به: ${btn.querySelector('span')?.textContent || targetTab}`, `#${targetTab}`, 'tab_switch', 'tab');
     });
   });
 
@@ -259,8 +256,6 @@
 
     topicModalOverlay.classList.add('open');
     topicModalOverlay.setAttribute('aria-hidden', 'false');
-
-    trackEvent(`مشاهده حباب موضوعی: ${data.title}`, `topic:${topicKey}`, 'topic_click', 'topic');
   }
 
   function closeTopicModal() {
@@ -512,11 +507,6 @@
       trackEvent(title, elem.getAttribute('href') || '-', 'click', 'connect');
     });
   });
-
-  // ارسال خودکار نوتیفیکیشن ورود به صفحه
-  setTimeout(() => {
-    trackEvent('ورود به لندینگ‌پیج', window.location.href, 'page_view', 'page_view');
-  }, 400);
 
   // مقداردهی اولیه نقل‌قول
   renderQuote(0);
