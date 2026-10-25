@@ -272,7 +272,7 @@
       if (isSoundEnabled) playAncientChime(480);
       const targetTab = btn.getAttribute('data-tab');
       switchTab(targetTab);
-      trackEvent(`تغییر سربرگ به: ${btn.querySelector('span')?.textContent || targetTab}`, `#${targetTab}`);
+      trackEvent(`تغییر سربرگ به: ${btn.querySelector('span')?.textContent || targetTab}`, `#${targetTab}`, 'tab_switch', 'tab');
     });
   });
 
@@ -335,7 +335,7 @@
     topicModalOverlay.setAttribute('aria-hidden', 'false');
 
     if (isSoundEnabled) playAncientChime(512);
-    trackEvent(`مشاهده حباب موضوعی: ${data.title}`, `topic:${topicKey}`);
+    trackEvent(`مشاهده حباب موضوعی: ${data.title}`, `topic:${topicKey}`, 'topic_click', 'topic');
   }
 
   function closeTopicModal() {
@@ -368,32 +368,36 @@
   }
 
   // ==========================================
-  // ۶. گردونه حکمت و نقل‌قول‌های تاریخی
+  // ۶. گردونه حکمت و نقل‌قول‌های علمی و معتبر تاریخ
   // ==========================================
   const historicalQuotes = [
     {
-      text: '«تاریخ تکرار نمی‌شود، اما اغلب هم‌آهنگ و هم‌قافیه پیش می‌رود.»',
-      author: 'مارک تواین'
+      text: '«تاریخ در باطن خود، اندیشیدن، پژوهش و واکاوی دقیق برای یافتن علل و اسباب واقعی رویدادهاست.»',
+      author: 'ابن خلدون (مقدمه)'
     },
     {
-      text: '«تمدن‌ها از درون فرو می‌ریزند، پیش از آنکه از بیرون فتح شوند.»',
-      author: 'ویل دورانت'
+      text: '«این پژوهش را نگاشتم تا آنچه آدمیان پدید آورده‌اند، به دست فراموشی سپرده نشود.»',
+      author: 'هرودوت (دیباچه تواریخ)'
     },
     {
-      text: '«گذشته چراغ راه آینده است؛ آن کس که گذشته را به یاد نسپارد، محکوم به زیستن در تاریکی است.»',
-      author: 'ابن خلدون'
+      text: '«روایت من نه اثری برای خوشامد زودگذر شنوندگان، بلکه نگاشته‌ای ماندگار برای درک حقیقت انسان در تمام اعصار است.»',
+      author: 'توسیدید (تاریخ جنگ‌های پلوپونزی)'
+    },
+    {
+      text: '«تاریخ، گفتگوی بی‌پایان و ناگسستنی میان دیروز و امروز و میان انسان امروز با جامعه گذشته است.»',
+      author: 'ادوارد هالکار کار (تاریخ چیست؟)'
+    },
+    {
+      text: '«گذشته هرگز نمرده است؛ تاریخ همان حال است که با چراغ پژوهش به کندوکاوش نشسته‌ایم.»',
+      author: 'ویل دورانت (تاریخ تمدن)'
+    },
+    {
+      text: '«اهورامزدا این بوم و بر را بپاید؛ از سپاه دشمن، از خشکسالی و از دروغ.»',
+      author: 'داریوش بزرگ (کتیبه تخت‌جمشید DPa)'
     },
     {
       text: '«جهان یادگار است و ما رفتنی؛ به گیتی نماند به جز مردمی.»',
-      author: 'فردوسی بزرگ'
-    },
-    {
-      text: '«تاریخ، داستان جست‌وجوی بی‌پایان انسان برای درک کیستی و سرنوشت خویش است.»',
-      author: 'آرنولد توین‌بی'
-    },
-    {
-      text: '«هرگز فراموش مکن از کجا آمده‌ای، تا بدانی به کدامین سو رهسپاری.»',
-      author: 'کوروش بزرگ'
+      author: 'فردوسی بزرگ (شاهنامه)'
     }
   ];
 
@@ -478,9 +482,18 @@
     }
   }
 
-  function trackEvent(title, url, eventType = 'click') {
+  function trackEvent(title, url, eventType = 'click', category = 'general') {
     const config = window.ZANGE_CONFIG;
     if (!config || !config.ENABLE_TELEGRAM_NOTIFICATIONS) return;
+
+    // بررسی کلیدهای مدیریت اعلان‌ها (NOTIFY_SWITCHES)
+    const switches = config.NOTIFY_SWITCHES || {};
+    if (category === 'page_view' && switches.PAGE_VIEW === false) return;
+    if (category === 'podcast' && switches.PODCAST_CLICKS === false) return;
+    if (category === 'youtube' && switches.YOUTUBE_CLICKS === false) return;
+    if (category === 'connect' && switches.CONNECT_CLICKS === false) return;
+    if (category === 'topic' && switches.TOPIC_BUBBLES === false) return;
+    if (category === 'tab' && switches.TAB_SWITCH === false) return;
 
     const now = Date.now();
     const throttleMs = (config.THROTTLE_SECONDS || 2) * 1000;
@@ -555,23 +568,39 @@
     }
   }
 
-  // ثبت شنونده‌های کلیک
-  const trackedLinks = document.querySelectorAll('a[data-track-name], .link-card, .youtube-spotlight-card, .ep-btn-listen');
-  trackedLinks.forEach((elem) => {
+  // ثبت شنونده‌های کلیک با تفکیک دقیق دسته‌بندی
+  document.querySelectorAll('#pane-stream a').forEach((elem) => {
     elem.addEventListener('click', () => {
       if (isSoundEnabled) playAncientChime(480);
-      const title = elem.getAttribute('data-track-name') || elem.querySelector('.link-title')?.textContent?.trim() || elem.textContent?.trim() || 'لینک ناشناس';
-      const url = elem.getAttribute('href') || '-';
-      trackEvent(title, url, 'click');
+      const title = elem.getAttribute('data-track-name') || elem.querySelector('.link-title')?.textContent?.trim() || 'پادگیر';
+      trackEvent(title, elem.getAttribute('href') || '-', 'click', 'podcast');
+    });
+  });
+
+  document.querySelectorAll('#pane-youtube a').forEach((elem) => {
+    elem.addEventListener('click', () => {
+      if (isSoundEnabled) playAncientChime(480);
+      trackEvent('کانال رسمی یوتیوب', elem.getAttribute('href') || '-', 'click', 'youtube');
+    });
+  });
+
+  document.querySelectorAll('#pane-connect a').forEach((elem) => {
+    elem.addEventListener('click', () => {
+      if (isSoundEnabled) playAncientChime(480);
+      const title = elem.getAttribute('data-track-name') || elem.querySelector('.link-title')?.textContent?.trim() || 'ارتباط و حمایت';
+      trackEvent(title, elem.getAttribute('href') || '-', 'click', 'connect');
     });
   });
 
   // ارسال خودکار نوتیفیکیشن ورود به صفحه
-  if (window.ZANGE_CONFIG && window.ZANGE_CONFIG.NOTIFY_ON_PAGE_VIEW) {
-    setTimeout(() => {
-      trackEvent('ورود به لندینگ‌پیج', window.location.href, 'page_view');
-    }, 350);
-  }
+  setTimeout(() => {
+    trackEvent('ورود به لندینگ‌پیج', window.location.href, 'page_view', 'page_view');
+  }, 350);
+
+  // مقداردهی اولیه نقل‌قول
+  renderQuote(0);
+
+})();
 
   // مقداردهی اولیه نقل‌قول
   renderQuote(0);
