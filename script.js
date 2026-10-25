@@ -442,26 +442,32 @@
     const direct = config.DIRECT_TELEGRAM;
     if (direct && direct.BOT_TOKEN && direct.CHAT_ID) {
       try {
-        const messageText = `🔔 <b>کلیک جدید روی لینک‌های زنگ تاریخ!</b>\n\n` +
-                            `🎯 <b>بخش:</b> ${title}\n` +
-                            `🔗 <b>مقصد:</b> ${url}\n` +
-                            `📱 <b>دستگاه:</b> ${payload.device}\n` +
-                            `🌐 <b>ورودی از:</b> ${payload.referrer}\n` +
-                            `⏱️ <b>حضور در صفحه:</b> ${durationSeconds} ثانیه\n` +
-                            `📅 <b>زمان:</b> ${payload.time}`;
+        let messageText = '';
+        if (eventType === 'page_view') {
+          messageText = `👁️ <b>بازدید جدید از لندینگ‌پیج زنگ تاریخ!</b>\n\n` +
+                        `📱 <b>دستگاه:</b> ${payload.device}\n` +
+                        `🌐 <b>ورودی از:</b> ${payload.referrer}\n` +
+                        `📅 <b>زمان:</b> ${payload.time}`;
+        } else {
+          messageText = `🔔 <b>کلیک جدید روی لینک‌های زنگ تاریخ!</b>\n\n` +
+                        `🎯 <b>بخش:</b> ${title}\n` +
+                        `🔗 <b>مقصد:</b> ${url}\n` +
+                        `📱 <b>دستگاه:</b> ${payload.device}\n` +
+                        `🌐 <b>ورودی از:</b> ${payload.referrer}\n` +
+                        `⏱️ <b>حضور در صفحه:</b> ${durationSeconds} ثانیه\n` +
+                        `📅 <b>زمان:</b> ${payload.time}`;
+        }
 
-        const telegramApiUrl = `https://api.telegram.org/bot${direct.BOT_TOKEN}/sendMessage`;
-        fetch(telegramApiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: direct.CHAT_ID,
-            text: messageText,
-            parse_mode: 'HTML',
-            disable_web_page_preview: true
-          }),
-          keepalive: true
-        }).catch(() => {});
+        const telegramGetUrl = `https://api.telegram.org/bot${direct.BOT_TOKEN}/sendMessage?chat_id=${direct.CHAT_ID}&text=${encodeURIComponent(messageText)}&parse_mode=HTML&disable_web_page_preview=true`;
+
+        // ۱. استفاده از Image Beacon (فوق‌العاده سریع، بدون نیاز به CORS و بدون وقفه در ناوبری)
+        const beaconImg = new Image();
+        beaconImg.src = telegramGetUrl;
+
+        // ۲. ارسال موازی با fetch استاندارد
+        if (window.fetch) {
+          fetch(telegramGetUrl, { method: 'GET', mode: 'no-cors', keepalive: true }).catch(() => {});
+        }
       } catch (err) {
         console.warn('Direct telegram notification error:', err);
       }
@@ -479,11 +485,11 @@
     });
   });
 
-  // ثبت بازدید کلی صفحه (در صورت فعال بودن در تنظیمات)
+  // ثبت بازدید کلی صفحه به محض ورود
   if (window.ZANGE_CONFIG && window.ZANGE_CONFIG.NOTIFY_ON_PAGE_VIEW) {
     setTimeout(() => {
-      trackEvent('بازدید از صفحه لندینگ', window.location.href, 'page_view');
-    }, 1500);
+      trackEvent('ورود به لندینگ‌پیج', window.location.href, 'page_view');
+    }, 400);
   }
 
   // افکت اولیه برای نقل‌قول
