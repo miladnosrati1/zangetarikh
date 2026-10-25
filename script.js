@@ -200,6 +200,35 @@
   });
 
   // ==========================================
+  // دریافت خودکار اطلاعات جدیدترین اپیزود از فید رسمی
+  // ==========================================
+  async function syncLatestEpisode() {
+    try {
+      const res = await fetch('https://itunes.apple.com/lookup?id=1547986367&entity=podcastEpisode&limit=2');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data.results || data.results.length < 2) return;
+
+      const latestEp = data.results[1];
+      const titleElem = document.querySelector('.featured-ep-title');
+      const detailsElem = document.querySelector('.featured-ep-details span');
+
+      if (titleElem && latestEp.trackName) {
+        titleElem.textContent = latestEp.trackName;
+      }
+
+      if (detailsElem && latestEp.trackTimeMillis) {
+        const mins = Math.round(latestEp.trackTimeMillis / 60000);
+        detailsElem.textContent = `مدت زمان: حدود ${mins} دقیقه`;
+      }
+    } catch (e) {
+      // در صورت اختلال شبکه، عنوان پیش‌فرض بدون تغییر باقی می‌ماند
+    }
+  }
+
+  syncLatestEpisode();
+
+  // ==========================================
   // ۵. حباب‌های تعاملی موضوعات پادکست زنگ تاریخ
   // ==========================================
   const topicsData = {
