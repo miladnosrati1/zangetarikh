@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCE08B"/>
+      <stop offset="45%" stop-color="#D4AF37"/>
+      <stop offset="70%" stop-color="#AA7C28"/>
+      <stop offset="100%" stop-color="#6E4D1B"/>
+    </linearGradient>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1A202C"/>
+      <stop offset="100%" stop-color="#080A10"/>
+    </radialGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="248" fill="url(#bgGrad)" stroke="url(#goldGrad)" stroke-width="8"/>
+  <circle cx="256" cy="256" r="236" fill="none" stroke="url(#goldGrad)" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.6"/>
+  
+  <!-- Outer Solar Rays -->
+  <g stroke="url(#goldGrad)" stroke-width="2" opacity="0.4">
+    <line x1="256" y1="24" x2="256" y2="40"/>
+    <line x1="256" y1="472" x2="256" y2="488"/>
+    <line x1="24" y1="256" x2="40" y2="256"/>
+    <line x1="472" y1="256" x2="488" y2="256"/>
+  </g>
+
+  <!-- Historical Bell & Ancient Emblem -->
+  <g filter="url(#glow)">
+    <!-- Bell top handle / Crown -->
+    <path d="M228 140 C228 116 284 116 284 140" fill="none" stroke="url(#goldGrad)" stroke-width="12" stroke-linecap="round"/>
+    <circle cx="256" cy="118" r="8" fill="url(#goldGrad)"/>
+    
+    <!-- Bell Body -->
+    <path d="M256 148
+             C210 152 178 180 174 240
+             C170 290 150 318 128 334
+             C120 340 124 352 136 352
+             L376 352
+             C388 352 392 340 384 334
+             C362 318 342 290 338 240
+             C334 180 302 152 256 148 Z" 
+          fill="url(#goldGrad)"/>
+          
+    <!-- Decorative Relief Pattern on Bell -->
+    <path d="M168 280 Q256 265 344 280" fill="none" stroke="#2B1D0C" stroke-width="4" opacity="0.5"/>
+    <path d="M152 315 Q256 298 360 315" fill="none" stroke="#2B1D0C" stroke-width="5" opacity="0.6"/>
+    
+    <!-- Clapper (زنگوله) -->
+    <circle cx="256" cy="382" r="22" fill="url(#goldGrad)"/>
+    <path d="M256 352 L256 370" stroke="url(#goldGrad)" stroke-width="8"/>
+  </g>
+
+  <!-- Inner Sparkles -->
+  <polygon points="256,200 262,220 282,226 262,232 256,252 250,232 230,226 250,220" fill="#FFF2B2" opacity="0.9"/>
+</svg>
