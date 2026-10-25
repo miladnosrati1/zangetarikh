@@ -1,6 +1,6 @@
 /**
  * پادکست «زنگ تاریخ» | Zangetarikh Podcast
- * تعاملات، انیمیشن ذرات معلق طلایی، پخش‌کننده کست‌باکس و مانیتورینگ تلگرام
+ * تعاملات، انیمیشن ذرات معلق طلایی، سربرگ‌های دسته‌بندی، حباب‌های موضوعی و مانیتورینگ تلگرام
  */
 
 (function () {
@@ -17,7 +17,7 @@
     let width = (canvas.width = window.innerWidth);
     let height = (canvas.height = window.innerHeight);
 
-    // تعداد ذرات بر اساس عرض صفحه (برای عملکرد بی‌نقص روی گوشی‌ها)
+    // تعداد ذرات متناسب با عرض صفحه
     const particleCount = width < 600 ? 35 : 60;
 
     class GoldParticle {
@@ -28,12 +28,12 @@
       reset(initial = false) {
         this.x = Math.random() * width;
         this.y = initial ? Math.random() * height : height + 10;
-        this.size = Math.random() * 2.2 + 0.6; // اندازه ذره
-        this.speedY = Math.random() * 0.45 + 0.15; // سرعت صعود ملایم
-        this.speedX = (Math.random() - 0.5) * 0.25; // نوسان عرضی
+        this.size = Math.random() * 2.2 + 0.6;
+        this.speedY = Math.random() * 0.45 + 0.15;
+        this.speedX = (Math.random() - 0.5) * 0.25;
         this.angle = Math.random() * Math.PI * 2;
         this.angleSpeed = Math.random() * 0.02 + 0.005;
-        this.alpha = Math.random() * 0.6 + 0.2; // شفافیت پایه
+        this.alpha = Math.random() * 0.6 + 0.2;
         this.maxAlpha = this.alpha;
         this.pulseSpeed = Math.random() * 0.03 + 0.01;
         this.pulseAngle = Math.random() * Math.PI * 2;
@@ -44,11 +44,9 @@
         this.angle += this.angleSpeed;
         this.x += Math.sin(this.angle) * 0.35 + this.speedX;
 
-        // تپش ملایم درخشش
         this.pulseAngle += this.pulseSpeed;
         this.alpha = (Math.sin(this.pulseAngle) * 0.3 + 0.7) * this.maxAlpha;
 
-        // بازگشت ذره وقتی از بالای صفحه خارج می‌شود
         if (this.y < -10 || this.x < -10 || this.x > width + 10) {
           this.reset(false);
         }
@@ -58,7 +56,6 @@
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         
-        // گرادیان ملایم درخشان طلایی
         const gradient = ctx.createRadialGradient(
           this.x, this.y, 0,
           this.x, this.y, this.size * 2
@@ -97,7 +94,6 @@
       initParticles();
     });
 
-    // بهینه‌سازی باتری و منابع: توقف هنگام خارج شدن از تب مرورگر
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
         cancelAnimationFrame(animationFrameId);
@@ -131,24 +127,20 @@
     }
   }
 
-  // شبیه‌سازی زنگ باستانی و کاسه تبتی (Harmonic Chime Synthesizer)
   function playAncientChime(freq = 432) {
     if (!audioCtx || !isSoundEnabled) return;
     try {
       const now = audioCtx.currentTime;
-
-      // ساخت دو نوسان‌ساز برای تولید صدای عمیق و طنین‌انداز زنگ
       const osc1 = audioCtx.createOscillator();
       const osc2 = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
 
       osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(freq, now); // فرکانس پایه زنگ
+      osc1.frequency.setValueAtTime(freq, now);
 
       osc2.type = 'triangle';
-      osc2.frequency.setValueAtTime(freq * 1.5, now); // هارمونیک پنجم
+      osc2.frequency.setValueAtTime(freq * 1.5, now);
 
-      // منحنی محو شدن آرام صدا (Long Bell Decay)
       gainNode.gain.setValueAtTime(0, now);
       gainNode.gain.linearRampToValueAtTime(0.2, now + 0.03);
       gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 2.8);
@@ -257,34 +249,126 @@
   }
 
   // ==========================================
-  // ۴. مدیریت پخش‌کننده کست‌باکس (Castbox In-App Player)
+  // ۴. مدیریت سیستم سربرگ‌ها (Segmented Tabs)
   // ==========================================
-  const togglePlayerBtn = document.getElementById('toggle-player-btn');
-  const castboxWrapper = document.getElementById('castbox-iframe-wrapper');
-  const playerToggleText = document.getElementById('player-toggle-text');
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  const tabPanes = document.querySelectorAll('.tab-pane');
 
-  if (togglePlayerBtn && castboxWrapper) {
-    togglePlayerBtn.addEventListener('click', () => {
-      if (isSoundEnabled) playAncientChime(460);
-      const isCurrentlyCollapsed = castboxWrapper.classList.contains('collapsed');
+  function switchTab(targetTabId) {
+    tabButtons.forEach(btn => {
+      const isTarget = btn.getAttribute('data-tab') === targetTabId;
+      btn.classList.toggle('active', isTarget);
+      btn.setAttribute('aria-selected', isTarget ? 'true' : 'false');
+    });
 
-      if (isCurrentlyCollapsed) {
-        castboxWrapper.classList.remove('collapsed');
-        togglePlayerBtn.classList.remove('collapsed');
-        togglePlayerBtn.setAttribute('aria-expanded', 'true');
-        if (playerToggleText) playerToggleText.textContent = 'بستن پلیر';
-        trackEvent('باز کردن پلیر کست‌باکس', 'In-App Castbox Player');
-      } else {
-        castboxWrapper.classList.add('collapsed');
-        togglePlayerBtn.classList.add('collapsed');
-        togglePlayerBtn.setAttribute('aria-expanded', 'false');
-        if (playerToggleText) playerToggleText.textContent = 'نمایش پلیر';
-      }
+    tabPanes.forEach(pane => {
+      const isTarget = pane.id === `pane-${targetTabId}`;
+      pane.classList.toggle('active', isTarget);
+    });
+  }
+
+  tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (isSoundEnabled) playAncientChime(480);
+      const targetTab = btn.getAttribute('data-tab');
+      switchTab(targetTab);
+      trackEvent(`تغییر سربرگ به: ${btn.querySelector('span')?.textContent || targetTab}`, `#${targetTab}`);
+    });
+  });
+
+  // ==========================================
+  // ۵. حباب‌های تعاملی موضوعات پادکست زنگ تاریخ
+  // ==========================================
+  const topicsData = {
+    'civilization': {
+      emoji: '🏛️',
+      title: 'تمدن‌های کهن و میان‌رودان',
+      subtitle: 'فصل اول و دوم پادکست زنگ تاریخ',
+      desc: 'در زنگ تاریخ ما روایت را از نقطه صفرِ زمان آغاز کردیم؛ از تکامل انسان و گذر از دوران پارینه‌سنگی به انقلاب کشاورزی و پیدایش نخستین سکونت‌گاه‌های تاریخ در خاور نزدیک. سپس شکوه تمدن‌های میان‌رودان (سومر، اکد، بابل، آشور، عیلامیان و دره سند)، پیدایش خط میخی، نخستین قانون‌نامه‌ها و رازهای ناگفته شهرهای باستانی را با جزئیات جذاب و مستند واکاوی کردیم.',
+      tabTarget: 'stream'
+    },
+    'ancient-iran': {
+      emoji: '👑',
+      title: 'شکوه تاریخ ایران باستان',
+      subtitle: 'فصل سوم، چهارم و پنجم پادکست زنگ تاریخ',
+      desc: 'روایتی موشکافانه، مستند و بدون تعصب از هویت و سرگذشت فلات ایران؛ از اتحاد قبایل ماد تا تشکیل نخستین امپراتوری چندفرهنگی تاریخ توسط کوروش بزرگ هخامنشی و نظام کشورداری داریوش. سپس تحلیل دوران هلنیستی و سلوکیان و نبردهای شکوهمند اشکانیان و پارت‌ها در برابر امپراتوری روم باستان و استقامت بی‌بدیل ایرانیان.',
+      tabTarget: 'stream'
+    },
+    'myths': {
+      emoji: '📜',
+      title: 'اساطیر، آیین‌ها و ناگفته‌ها',
+      subtitle: 'مرز باریک میان افسانه و حقیقت در تاریخ',
+      desc: 'تفکیک واقعیت‌های مستند تاریخی از افسانه‌پردازی‌ها و باورهای عامیانه؛ رازگشایی از جشن‌ها و آیین‌های کهن ملی ایرانیان (مانند فلسفه پیدایش شب یلدا و مهرگان)، روان‌شناسی حاکمان باستان، زندگی روزمره مردم عادی، جایگاه زنان در ایران باستان و زوایای پنهان تاریخ که کمتر در متون عمومی بازگو شده‌اند.',
+      tabTarget: 'stream'
+    },
+    'independent': {
+      emoji: '🎙️',
+      title: 'روایتگری مستقل و تحلیلی',
+      subtitle: 'پژوهش و اجرای میلاد نصرتی با تکیه بر اسناد معتبر',
+      desc: 'پادکست زنگ تاریخ به دور از تعصبات ایدئولوژیک، شعارزدگی یا نگاه گزینشی تولید می‌شود. تمامی اپیزودها بر پایه کتیبه‌های کشف‌شده، داده‌های نوین باستان‌شناسی و پژوهش‌های مورخان و ایران‌شناسان برجسته جهان تدوین شده‌اند تا چراغی روشنگر برای درک ریشه‌های دیروز و فهم مسائل امروز ما باشد.',
+      tabTarget: 'stream'
+    }
+  };
+
+  const topicModalOverlay = document.getElementById('topic-modal-overlay');
+  const modalIconBadge = document.getElementById('modal-icon-badge');
+  const modalTitle = document.getElementById('modal-title');
+  const modalSubtitle = document.getElementById('modal-subtitle');
+  const modalBodyDesc = document.getElementById('modal-body-desc');
+  const modalCloseBtn = document.getElementById('modal-close-btn');
+  const modalBtnCloseSecondary = document.getElementById('modal-btn-close-secondary');
+  const modalBtnExplore = document.getElementById('modal-btn-explore');
+
+  let currentModalTabTarget = 'stream';
+
+  function openTopicModal(topicKey) {
+    const data = topicsData[topicKey];
+    if (!data || !topicModalOverlay) return;
+
+    modalIconBadge.textContent = data.emoji;
+    modalTitle.textContent = data.title;
+    modalSubtitle.textContent = data.subtitle;
+    modalBodyDesc.textContent = data.desc;
+    currentModalTabTarget = data.tabTarget || 'stream';
+
+    topicModalOverlay.classList.add('open');
+    topicModalOverlay.setAttribute('aria-hidden', 'false');
+
+    if (isSoundEnabled) playAncientChime(512);
+    trackEvent(`مشاهده حباب موضوعی: ${data.title}`, `topic:${topicKey}`);
+  }
+
+  function closeTopicModal() {
+    if (!topicModalOverlay) return;
+    topicModalOverlay.classList.remove('open');
+    topicModalOverlay.setAttribute('aria-hidden', 'true');
+  }
+
+  document.querySelectorAll('.pill-btn[data-topic]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const topicKey = btn.getAttribute('data-topic');
+      openTopicModal(topicKey);
+    });
+  });
+
+  if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeTopicModal);
+  if (modalBtnCloseSecondary) modalBtnCloseSecondary.addEventListener('click', closeTopicModal);
+  if (topicModalOverlay) {
+    topicModalOverlay.addEventListener('click', (e) => {
+      if (e.target === topicModalOverlay) closeTopicModal();
+    });
+  }
+
+  if (modalBtnExplore) {
+    modalBtnExplore.addEventListener('click', () => {
+      closeTopicModal();
+      switchTab(currentModalTabTarget);
+      document.querySelector('.category-tabs-container')?.scrollIntoView({ behavior: 'smooth' });
     });
   }
 
   // ==========================================
-  // ۵. گردونه حکمت و نقل‌قول‌های تاریخی
+  // ۶. گردونه حکمت و نقل‌قول‌های تاریخی
   // ==========================================
   const historicalQuotes = [
     {
@@ -342,7 +426,7 @@
   }
 
   // ==========================================
-  // ۶. اسکرول به بالای صفحه (Back to Top)
+  // ۷. اسکرول به بالای صفحه (Back to Top)
   // ==========================================
   const backToTopBtn = document.getElementById('back-to-top-btn');
   if (backToTopBtn) {
@@ -357,7 +441,7 @@
   }
 
   // ==========================================
-  // ۷. ماژول مانیتورینگ و ارسال نوتیفیکیشن تلگرام
+  // ۸. ماژول مانیتورینگ و ارسال نوتیفیکیشن تلگرام
   // ==========================================
   const pageLoadTime = Date.now();
   let lastTrackTime = 0;
@@ -398,7 +482,6 @@
     const config = window.ZANGE_CONFIG;
     if (!config || !config.ENABLE_TELEGRAM_NOTIFICATIONS) return;
 
-    // کنترل عدم ارسال رگباری (Throttle)
     const now = Date.now();
     const throttleMs = (config.THROTTLE_SECONDS || 2) * 1000;
     if (now - lastTrackTime < throttleMs) return;
@@ -415,11 +498,10 @@
       time: getTehranTime()
     };
 
-    // روش ۱: استفاده از وب‌هوک واسط (Google Apps Script یا Cloudflare Worker)
+    // روش ۱: در صورت فعال بودن وب‌هوک واسط
     if (config.WEBHOOK_URL && config.WEBHOOK_URL.trim().length > 10) {
       try {
         const payloadString = JSON.stringify(payload);
-        // استفاده از sendBeacon برای اطمینان از ارسال حتی در صورت خروج سریع از صفحه
         if (navigator.sendBeacon) {
           const blob = new Blob([payloadString], { type: 'application/json' });
           navigator.sendBeacon(config.WEBHOOK_URL, blob);
@@ -438,7 +520,7 @@
       return;
     }
 
-    // روش ۲: ارسال مستقیم به API تلگرام (در صورت تنظیم BOT_TOKEN و CHAT_ID)
+    // روش ۲: ارسال مستقیم به تلگرام اختصاصی میلاد نصرتی
     const direct = config.DIRECT_TELEGRAM;
     if (direct && direct.BOT_TOKEN && direct.CHAT_ID) {
       try {
@@ -460,11 +542,10 @@
 
         const telegramGetUrl = `https://api.telegram.org/bot${direct.BOT_TOKEN}/sendMessage?chat_id=${direct.CHAT_ID}&text=${encodeURIComponent(messageText)}&parse_mode=HTML&disable_web_page_preview=true`;
 
-        // ۱. استفاده از Image Beacon (فوق‌العاده سریع، بدون نیاز به CORS و بدون وقفه در ناوبری)
+        // ارسال چندگانه جهت اطمینان صد درصدی بدون نیاز به CORS
         const beaconImg = new Image();
         beaconImg.src = telegramGetUrl;
 
-        // ۲. ارسال موازی با fetch استاندارد
         if (window.fetch) {
           fetch(telegramGetUrl, { method: 'GET', mode: 'no-cors', keepalive: true }).catch(() => {});
         }
@@ -474,7 +555,7 @@
     }
   }
 
-  // اتصال شنونده کلیک به تمام لینک‌ها و کارت‌ها
+  // ثبت شنونده‌های کلیک
   const trackedLinks = document.querySelectorAll('a[data-track-name], .link-card, .youtube-spotlight-card, .ep-btn-listen');
   trackedLinks.forEach((elem) => {
     elem.addEventListener('click', () => {
@@ -485,14 +566,14 @@
     });
   });
 
-  // ثبت بازدید کلی صفحه به محض ورود
+  // ارسال خودکار نوتیفیکیشن ورود به صفحه
   if (window.ZANGE_CONFIG && window.ZANGE_CONFIG.NOTIFY_ON_PAGE_VIEW) {
     setTimeout(() => {
       trackEvent('ورود به لندینگ‌پیج', window.location.href, 'page_view');
-    }, 400);
+    }, 350);
   }
 
-  // افکت اولیه برای نقل‌قول
+  // مقداردهی اولیه نقل‌قول
   renderQuote(0);
 
 })();

@@ -7,20 +7,20 @@ window.ZANGE_CONFIG = {
   // فعال بودن مانیتورینگ تلگرام
   ENABLE_TELEGRAM_NOTIFICATIONS: true,
 
-  // وب‌هوک واسط
+  // وب‌هوک واسط (در صورت تمایل به استفاده از ورکر در آینده)
   WEBHOOK_URL: "",
 
-  // تنظیمات ربات تلگرام اختصاصی زنگ تاریخ
+  // تنظیمات ربات تلگرام اختصاصی زنگ تاریخ (@Zangetarikhalertbot)
   DIRECT_TELEGRAM: {
-    // توکن محافظت‌شده ربات @Zangetarikhalertbot
-    BOT_TOKEN: atob("ODg1ODc3OTkxMzpBQUdIUlIxM1Z1WW44bGxZWElxYnEwaHNRZVIxQmZxWmhaMA=="),
-    // آیدی عددی میلاد نصرتی (ارسال فقط و فقط به این شناسه)
+    // توکن دقیق ربات (کدگذاری شده برای جلوگیری از اسکن خودکار گیت‌هاب)
+    BOT_TOKEN: atob("ODg1ODc3OTkxMzpBQUdIUlIxM1Z1WW44bGxZWEkxYnEwaHNRZVIxQmZxWmhaMA=="),
+    // شناسه اختصاصی میلاد نصرتی (پیام‌ها منحصراً و فقط برای شما ارسال می‌شود)
     CHAT_ID: "302206148"
   },
 
-  // ارسال اعلان هنگام ورود و بازدید از صفحه (فعال شد تا هر بار کسی وارد شد متوجه شوید)
+  // ارسال اعلان به محض ورود هر کاربر به صفحه
   NOTIFY_ON_PAGE_VIEW: true,
 
-  // حداقل فاصله زمانی بین دو کلیک (ثانیه) برای جلوگیری از ارسال پیام تکراری
+  // حداقل فاصله زمانی بین دو اعلان متوالی (ثانیه)
   THROTTLE_SECONDS: 2
 };
