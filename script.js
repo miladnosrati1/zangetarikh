@@ -214,15 +214,18 @@
       const detailsElem = document.querySelector('.featured-ep-details span');
 
       if (titleElem && latestEp.trackName) {
-        titleElem.textContent = latestEp.trackName;
+        titleElem.textContent = latestEp.trackName.trim();
       }
 
       if (detailsElem && latestEp.trackTimeMillis) {
-        const mins = Math.round(latestEp.trackTimeMillis / 60000);
-        detailsElem.textContent = `مدت زمان: حدود ${mins} دقیقه`;
+        const totalSecs = Math.round(latestEp.trackTimeMillis / 1000);
+        const mins = Math.floor(totalSecs / 60);
+        const secs = totalSecs % 60;
+        const durationText = secs > 0 ? `${mins} دقیقه و ${secs} ثانیه` : `${mins} دقیقه`;
+        detailsElem.textContent = `مدت زمان: ${durationText}`;
       }
     } catch (e) {
-      // در صورت اختلال شبکه، عنوان پیش‌فرض بدون تغییر باقی می‌ماند
+      // در صورت اختلال شبکه، اطلاعات واقعی پیش‌فرض بدون تغییر باقی می‌ماند
     }
   }
 
@@ -399,17 +402,42 @@
 
   function getDeviceType() {
     const ua = navigator.userAgent;
-    if (/iPad|iPhone|iPod/.test(ua)) return 'موبایل (iOS / iPhone)';
-    if (/Android/.test(ua)) return 'موبایل (Android)';
-    if (/Windows/.test(ua)) return 'رایانه (Windows)';
-    if (/Macintosh/.test(ua)) return 'رایانه (macOS / Mac)';
-    if (/Linux/.test(ua)) return 'رایانه (Linux)';
-    return 'سایر دستگاه‌ها';
+    const isInstagram = /Instagram|IGNav/i.test(ua);
+    let dev = 'سایر دستگاه‌ها';
+    if (/iPad|iPhone|iPod/.test(ua)) dev = 'موبایل (iOS / iPhone)';
+    else if (/Android/.test(ua)) dev = 'موبایل (Android)';
+    else if (/Windows/.test(ua)) dev = 'رایانه (Windows)';
+    else if (/Macintosh/.test(ua)) dev = 'رایانه (macOS / Mac)';
+    else if (/Linux/.test(ua)) dev = 'رایانه (Linux)';
+
+    if (isInstagram) {
+      dev += ' [درون اپلیکیشن اینستاگرام]';
+    }
+    return dev;
+  }
+
+  function getInstagramContext() {
+    const ua = navigator.userAgent || '';
+    const isInstagramApp = /Instagram|IGNav/i.test(ua);
+    const urlParams = new URLSearchParams(window.location.search);
+    const igsh = urlParams.get('igsh') || urlParams.get('utm_source') || '';
+    const ref = document.referrer || '';
+    const fromIG = ref.includes('instagram.com') || ref.includes('l.instagram.com');
+
+    if (isInstagramApp) {
+      return igsh ? `📸 اپلیکیشن اینستاگرام (کد کمپین/اشتراک: ${igsh})` : '📸 باز شده درون مرورگر اینستاگرام (لینک بیو)';
+    }
+    if (fromIG) {
+      return '📸 ارجاع از وب‌سایت یا استوری اینستاگرام';
+    }
+    return '';
   }
 
   function getReferrerSource() {
+    const ig = getInstagramContext();
+    if (ig) return ig;
     const ref = document.referrer;
-    if (!ref) return 'مستقیم / بیو اینستاگرام';
+    if (!ref) return 'مستقیم / بیو پیج';
     if (ref.includes('instagram.com')) return 'اینستاگرام (Instagram)';
     if (ref.includes('t.me') || ref.includes('telegram')) return 'تلگرام (Telegram)';
     if (ref.includes('google.com')) return 'جستجوی گوگل';
@@ -487,16 +515,16 @@
       try {
         let messageText = '';
         if (eventType === 'page_view') {
-          messageText = `👁️ <b>بازدید جدید از لندینگ‌پیج زنگ تاریخ!</b>\n\n` +
-                        `📱 <b>دستگاه:</b> ${payload.device}\n` +
+          messageText = `👁️ <b>ورود کاربر جدید به صفحه زنگ تاریخ!</b>\n\n` +
                         `🌐 <b>ورودی از:</b> ${payload.referrer}\n` +
+                        `📱 <b>دستگاه:</b> ${payload.device}\n` +
                         `📅 <b>زمان:</b> ${payload.time}`;
         } else {
-          messageText = `🔔 <b>کلیک جدید روی لینک‌های زنگ تاریخ!</b>\n\n` +
-                        `🎯 <b>بخش:</b> ${title}\n` +
+          messageText = `🔔 <b>کلیک روی لینک‌های زنگ تاریخ!</b>\n\n` +
+                        `🎯 <b>بخش انتخابی:</b> ${title}\n` +
                         `🔗 <b>مقصد:</b> ${url}\n` +
                         `📱 <b>دستگاه:</b> ${payload.device}\n` +
-                        `🌐 <b>ورودی از:</b> ${payload.referrer}\n` +
+                        `🌐 <b>مبدا کاربر:</b> ${payload.referrer}\n` +
                         `⏱️ <b>حضور در صفحه:</b> ${durationSeconds} ثانیه\n` +
                         `📅 <b>زمان:</b> ${payload.time}`;
         }
@@ -536,6 +564,11 @@
       trackEvent(title, elem.getAttribute('href') || '-', 'click', 'connect');
     });
   });
+
+  // ارسال خودکار نوتیفیکیشن هنگام باز کردن لینک و ورود کاربر به صفحه
+  setTimeout(() => {
+    trackEvent('ورود به لندینگ‌پیج', window.location.href, 'page_view', 'page_view');
+  }, 450);
 
   // مقداردهی اولیه نقل‌قول
   renderQuote(0);
